@@ -1,0 +1,57 @@
+/*
+ * macros.h
+ *
+ *  Created on: 12 sep. 2020
+ *      Author: francisco
+ */
+
+#ifndef MISPROGRAMAS_RTOS1_EJ_B5_INC_MACROS_H_
+#define MISPROGRAMAS_RTOS1_EJ_B5_INC_MACROS_H_
+
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "sapi.h"
+
+/*=====[Definicion de macros]==============================*/
+
+#define RATE 40
+#define LED_RATE pdMS_TO_TICKS(RATE)
+#define BUTTON_RATE 1
+
+#define PERIOD_WAIT_SEMAPHORE pdMS_TO_TICKS(1000)	//Periodo de espera del semaforo 1s
+#define LEDR_HIGH_TIME_TICKS pdMS_TO_TICKS(200)	// 200ms de encendido del LEDR
+
+#define DEBOUNCE_TIME 40
+
+DEBUG_PRINT_ENABLE;
+
+/*****************************************
+ * 			Data Types
+ *****************************************/
+
+typedef enum{
+	FSM_BUTTON_UP,
+	FSM_BUTTON_DOWN,
+	FSM_BUTTON_FALLING,
+	FSM_BUTTON_RISING
+} fsmButtonState_t;
+
+typedef struct{
+	gpioMap_t tecla_fsm;
+
+	// Variables
+	TickType_t tiempo_medido;
+	fsmButtonState_t fsmButtonState;
+	TickType_t tiempo_down;
+	TickType_t tiempo_up;
+
+	uint8_t contFalling;
+	uint8_t contRising;
+} TeclaRTOSfsm_t;
+
+
+typedef struct{
+	TeclaRTOSfsm_t tecla;
+	gpioMap_t		led;
+} led_tecla_t;
+#endif /* MISPROGRAMAS_RTOS1_EJ_B5_INC_MACROS_H_ */
