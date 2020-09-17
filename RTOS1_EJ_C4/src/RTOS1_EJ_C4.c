@@ -14,7 +14,6 @@
 #include "task.h"
 
 #include "sapi.h"
-#include "userTasks.h"
 
 #include "macros.h"				//Definicion de macros
 #include "fsm_debounce_RTOS.h"
@@ -62,7 +61,7 @@ int main( void )
 					tarea_tecla,                     // Funcion de la tarea a ejecutar
 					( const char * )"tarea_tecla",   // Nombre de la tarea como String amigable para el usuario
 					configMINIMAL_STACK_SIZE*2, 	// Cantidad de stack de la tarea
-					0,                          	// Parametros de tarea
+					TEC1,                          	// Parametros de tarea
 					tskIDLE_PRIORITY+1,         	// Prioridad de la tarea
 					0                           	// Puntero a la tarea creada en el sistema
 			);
@@ -70,7 +69,7 @@ int main( void )
 	// Gestion de errores de tareas
 	if((res_A || res_B) == pdFAIL)
 	{
-		gpioWrite( LEDR, ON );
+		gpioWrite( LED_TASK_ERROR, ON );
 		printf( "Error al crear las tareas.\r\n" );
 		while(TRUE);						// VER ESTE LINK: https://pbs.twimg.com/media/BafQje7CcAAN5en.jpg
 	}
@@ -80,7 +79,7 @@ int main( void )
 	// Gestion de errores de semaforos
 	if( sem_tec_pulsada == pdFALSE)
 	{
-		gpioWrite( LED3, ON );
+		gpioWrite( LED_SEM_ERROR, ON );
 		printf( "Error al crear los semaforos.\r\n" );
 		while(TRUE);						// VER ESTE LINK: https://pbs.twimg.com/media/BafQje7CcAAN5en.jpg
 	}
@@ -106,7 +105,7 @@ int main( void )
 
 void tarea_tecla( void* taskParmPtr )
 {
-	tecla1.tecla_fsm = TEC1;
+	tecla1.tecla_fsm = (gpioMap_t) taskParmPtr;
 
 	fsmButtonInit(&tecla1);
 
@@ -132,15 +131,15 @@ void tarea_led( void* taskParmPtr )
 	// ---------- REPETIR POR SIEMPRE --------------------------
 	while( TRUE )
 	{
-		if(xSemaphoreTake( sem_tec_pulsada , PERIOD_WAIT_SEMAPHORE )){			// Esperamos tecla con TimeOut de 1seg
-			gpioWrite( LEDG , ON );
-			vTaskDelay( LEDR_HIGH_TIME_TICKS );
-			gpioWrite( LEDG , OFF );
+		if(xSemaphoreTake( sem_tec_pulsada ,  (PERIOD_LED_TICKS - LEDR_HIGH_TIME_TICKS))){			// Esperamos tecla con TimeOut de 1seg
+			gpioWrite( LED_VERDE , ON );
+			vTaskDelay( LEDG_HIGH_TIME_TICKS );
+			gpioWrite( LED_VERDE , OFF );
 		}
 		else{
-			gpioWrite( LEDR , ON );
+			gpioWrite( LED_ROJO , ON );
 			vTaskDelay( LEDR_HIGH_TIME_TICKS );
-			gpioWrite( LEDR , OFF );
+			gpioWrite( LED_ROJO , OFF );
 		}
 	}
 }
